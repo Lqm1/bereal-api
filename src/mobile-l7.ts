@@ -344,4 +344,28 @@ export class BeReal {
       totalRecommendations: number;
     }>();
   }
+
+  async getContentPostsMultiFormatUploadUrl(mimeTypes: Array<string>) {
+    const response = await this.client.get(
+      "content/posts/multi-format-upload-url",
+      {
+        searchParams: {
+          mime_types: mimeTypes.join(","),
+        },
+      }
+    );
+    return response.json<{
+      data: Array<{
+        url: string;
+        expireAt: string;
+        bucket: string;
+        path: string;
+        headers: {
+          "Cache-Control": string;
+          "Content-Type": string;
+          "x-goog-content-length-range": string;
+        };
+      }>;
+    }>();
+  }
 }
