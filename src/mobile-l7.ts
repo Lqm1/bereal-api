@@ -303,4 +303,45 @@ export class BeReal {
       totalRecommendations: number;
     }>();
   }
+
+  async getRecommendationsFriendsAndReverse(
+    hashedPhoneNumber: string,
+    limit = 50
+  ) {
+    const response = await this.client.get(
+      "recommendations/friends-and-reverse",
+      {
+        searchParams: {
+          hashed_phone_number: hashedPhoneNumber,
+          limit: limit,
+        },
+      }
+    );
+    return response.json<{
+      recommendations: Array<{
+        username: string;
+        fullname?: string;
+        hashedPhoneNumber: string;
+        profilePicture?: {
+          url: string;
+          width: number;
+          height: number;
+        };
+        userId: string;
+        explanation: Array<string>;
+        mutualsCount: number;
+        mutualFriends: Array<{
+          username: string;
+          fullname: string;
+          profilePicture: {
+            url: string;
+            width: number;
+            height: number;
+          };
+        }>;
+        streakLength: number;
+      }>;
+      totalRecommendations: number;
+    }>();
+  }
 }
