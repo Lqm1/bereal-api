@@ -283,4 +283,24 @@ export class BeReal {
       eventProtoBytes: Array<unknown>;
     }>();
   }
+
+  async getRecommendationsContacts() {
+    const response = await this.client.get("recommendations/contacts");
+    return response.json<{
+      recommendations: Array<{
+        userId: string;
+        username: string;
+        fullname: string;
+        hashedPhoneNumber: string;
+        profilePicture: {
+          height: number;
+          width: number;
+          url: string;
+        };
+        explanation: Array<string>;
+        mutualFriends: Array<unknown>;
+      }>;
+      totalRecommendations: number;
+    }>();
+  }
 }
