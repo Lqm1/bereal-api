@@ -39,7 +39,7 @@ export class BeReal {
     });
   }
 
-  async personMe() {
+  async getPersonMe() {
     const response = await this.client.get("person/me");
     return response.json<{
       id: string;
