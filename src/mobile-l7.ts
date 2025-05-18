@@ -87,4 +87,115 @@ export class BeReal {
       lastPostAt: string;
     }>();
   }
+
+  async getSettings() {
+    const response = await this.client.get("settings");
+    return response.json<{
+      mandatoryVersions: {
+        ios: string;
+        android: string;
+      };
+      recommendedVersions: {
+        ios: string;
+        android: string;
+      };
+      storage: {
+        bucket: string;
+      };
+      polling: {
+        feedsFriends: number;
+        jitterPercent: number;
+        moment: number;
+      };
+      officialAccounts: {
+        maxFollows: number;
+        maxNotifications: number;
+      };
+      bts: {
+        maxLength: number;
+      };
+      cdn: {
+        "cdn.bereal.network": Array<{
+          domain: string;
+          weight: number;
+        }>;
+        "cdn-cf.bereal.network": Array<{
+          domain: string;
+          weight: number;
+        }>;
+        "cdn-mc-eu1-fd5f74b2.bereal.network": Array<{
+          domain: string;
+          weight: number;
+        }>;
+      };
+      analytics: {
+        batch: {
+          maxLength: number;
+          flushAfterMs: number;
+        };
+        metrics: {
+          postSustainLookTimeInMs: number;
+        };
+        amplitudeSettings: {
+          defaultAllowDeny: string;
+          allowedEvents: Record<string, unknown>;
+          deniedEvents: {
+            notification: Array<string>;
+            legacyInHouse: Array<string>;
+          };
+        };
+        vectorSettings: {
+          defaultAllowDeny: string;
+          allowedEvents: {
+            impressions: Array<string>;
+            notification: Array<string>;
+            legacyInHouse: Array<string>;
+            applicationOpened: Array<string>;
+          };
+          deniedEvents: Record<string, unknown>;
+        };
+      };
+      featureFlags: {
+        ads: boolean;
+        music: boolean;
+        musicProviderApple: boolean;
+        analyticsVector: boolean;
+        analyticsAmplitude: boolean;
+        btsDelhiRead: boolean;
+        memoriesRecap2024: boolean;
+        btsDelhiWrite: boolean;
+        realtimeStream: boolean;
+        musicProviderSpotify: boolean;
+        sunset: boolean;
+        oaRandomizedRecommendations: boolean;
+        friendsOfFriendsFeed: boolean;
+        memoriesRecapRecord: boolean;
+        memoriesRecap: boolean;
+      };
+      featureFlagsSettings: {
+        whistler: {
+          maxBootstrapCallsCount: number;
+          printRolloutBanner: boolean;
+          chatGroupMaxSize: number;
+          friends: Array<unknown>;
+          friendsWithGroupChat: Array<unknown>;
+        };
+        ads: {
+          units: Array<{
+            id: string;
+            type: string;
+          }>;
+          refreshMs: number;
+          initialPosition: number;
+          minimumSpaceInterval: number;
+        };
+      };
+      fofInFeed: {
+        pollingRateMs: number;
+        delayMs: number;
+        size: number;
+        belowFriendsCount: number;
+      };
+    }>();
+  }
 }
