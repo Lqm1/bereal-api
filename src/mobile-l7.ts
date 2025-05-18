@@ -198,4 +198,89 @@ export class BeReal {
       };
     }>();
   }
+
+  async getFeedsFriendsV1() {
+    const response = await this.client.get("feeds/friends-v1");
+    return response.json<{
+      userPosts: unknown;
+      friendsPosts: Array<{
+        user: {
+          id: string;
+          username: string;
+          profilePicture: {
+            url: string;
+            width: number;
+            height: number;
+            mediaType: string;
+          };
+          fullname: string;
+          type: string;
+        };
+        momentId: string;
+        region: string;
+        posts: Array<{
+          id: string;
+          userId: string;
+          momentId: string;
+          primary: {
+            url: string;
+            width: number;
+            height: number;
+            mediaType: string;
+          };
+          secondary: {
+            url: string;
+            width: number;
+            height: number;
+            mediaType: string;
+          };
+          realMojis: Array<{
+            id: string;
+            user: {
+              id: string;
+              username: string;
+              profilePicture?: {
+                url: string;
+                width: number;
+                height: number;
+                mediaType: string;
+              };
+              type: string;
+            };
+            media: {
+              url: string;
+              width: number;
+              height: number;
+              mediaType: string;
+            };
+            emoji: string;
+            type: string;
+            isInstant: boolean;
+            postedAt: string;
+          }>;
+          comments: Array<unknown>;
+          tags: Array<unknown>;
+          caption: string;
+          retakeCounter: number;
+          lateInSeconds: number;
+          isLate: boolean;
+          isMain: boolean;
+          isFirst: boolean;
+          isResurrected: boolean;
+          visibility: Array<string>;
+          origin: string;
+          postedAt: string;
+          takenAt: string;
+          creationDate: string;
+          createdAt: string;
+          updatedAt: string;
+          postType: string;
+        }>;
+        contentMappingEnabled: boolean;
+      }>;
+      remainingPosts: number;
+      maxPostsPerMoment: number;
+      eventProtoBytes: Array<unknown>;
+    }>();
+  }
 }
