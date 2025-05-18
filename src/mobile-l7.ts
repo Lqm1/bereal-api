@@ -39,6 +39,19 @@ export class BeReal {
     });
   }
 
+  async getTerms() {
+    const response = await this.client.get("terms");
+    return response.json<{
+      data: Array<{
+        code: string;
+        status: string;
+        signedAt?: string;
+        termUrl: string;
+        version: string;
+      }>;
+    }>();
+  }
+
   async getPersonMe() {
     const response = await this.client.get("person/me");
     return response.json<{
