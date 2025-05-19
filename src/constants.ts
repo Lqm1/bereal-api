@@ -70,7 +70,7 @@ export type ExtraHeaders = {
   authorization?: string;
   /** BeReal user ID header */
   "bereal-user-id"?: string;
-} & Record<string, string | number>;
+} & Record<string, string>;
 
 /**
  * Creates default headers required for BeReal API requests
@@ -82,7 +82,7 @@ export type ExtraHeaders = {
 export const BEREAL_DEFAULT_HEADERS = (
   deviceId: string,
   extraHeaders?: ExtraHeaders
-) => ({
+): Record<string, string> => ({
   "bereal-signature": createBeRealSignature(deviceId),
   "user-agent": `BeReal/${BEREAL_APP_VERSION} (${BEREAL_APP_BUNDLE_ID}; build:${BEREAL_APP_VERSION_CODE}; ${BEREAL_PLATFORM} ${BEREAL_OS_VERSION}.0)`,
   "bereal-app-language": "en-US",
