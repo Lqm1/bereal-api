@@ -1,11 +1,71 @@
+/**
+ * BeReal Authentication Module - Provides classes and utilities for authenticating with BeReal's API
+ * 
+ * This module exports classes for handling BeReal authentication through phone verification.
+ * It includes BeRealAuth for main authentication and BeRealAuthVonage for SMS verification code handling.
+ * 
+ * @example
+ * ```ts
+ * import { BeRealAuth, BeRealAuthVonage } from "jsr:@lami/bereal-api";
+ * 
+ * // Initialize authentication with a device ID
+ * const authVonage = new BeRealAuthVonage("your-device-id-here");
+ * const auth = new BeRealAuth("your-device-id-here");
+ * 
+ * // Send a data exchange request
+ * const { dataExchange } = await authVonage.dataExchange({
+ *  phoneNumber: "+1234567890",
+ * });
+ * 
+ * // Arkose Labs verification
+ * // blob: dataExchange
+ * 
+ * // Request verification code sent to phone number
+ * const { vonageRequestId } = await authVonage.requestCode({
+ *  deviceId: "your-device-id-here",
+ *  tokens: [
+ *    { token: "arkose-labs-solution-token", identifier: "AR" },
+ *  ],
+ *  phoneNumber: "+1234567890",
+ * });
+ * 
+ * // Verify the code
+ * const { token } = await authVonage.checkCode({
+ *  code: "123456",
+ *  vonageRequestId,
+ * });
+ * 
+ * // Get access token
+ * const { access_token, refresh_token } = await auth.token({
+ *  client_id: "your-client-id-here",
+ *  client_secret: "your-client-secret-here",
+ *  grant_type: "firebase",
+ *  token,
+ * });
+ * ```
+ * 
+ * @module
+ */
 import ky, { type KyInstance } from "ky";
 import { BEREAL_DEFAULT_HEADERS, type ExtraHeaders } from "./constants.ts";
 import { createBeRealSignature } from "./utils.ts";
 
+/**
+ * Authentication client for BeReal's Vonage SMS service
+ * 
+ * This class provides methods for sending and verifying SMS verification codes
+ * through BeReal's Vonage integration.
+ */
 export class BeRealAuthVonage {
   private readonly client: KyInstance;
   private readonly deviceId: string;
 
+  /**
+   * Creates a new BeRealAuthVonage instance
+   * 
+   * @param deviceId - A unique device identifier
+   * @param extraHeaders - Optional additional headers for API requests
+   */
   constructor(deviceId: string, extraHeaders?: ExtraHeaders) {
     this.deviceId = deviceId;
     this.client = ky.extend({
@@ -63,10 +123,22 @@ export class BeRealAuthVonage {
   }
 }
 
+/**
+ * Main authentication client for BeReal
+ * 
+ * This class provides methods for authenticating with BeReal's API
+ * including sending verification codes and obtaining access tokens.
+ */
 export class BeRealAuth {
   private readonly client: KyInstance;
   private readonly deviceId: string;
 
+  /**
+   * Creates a new BeRealAuth instance
+   * 
+   * @param deviceId - A unique device identifier
+   * @param extraHeaders - Optional additional headers for API requests
+   */
   constructor(deviceId: string, extraHeaders?: ExtraHeaders) {
     this.deviceId = deviceId;
     this.client = ky.extend({

@@ -1,3 +1,22 @@
+/**
+ * BeReal Utilities Module - Helper functions for working with BeReal's API
+ *
+ * This module provides utility functions for generating signatures, parsing tokens,
+ * and other helper functions required for BeReal API interactions.
+ *
+ * @example
+ * ```ts
+ * import { createBeRealSignature, parseAccessToken } from "jsr:@lami/bereal-api";
+ *
+ * // Generate a BeReal API signature
+ * const signature = createBeRealSignature("your-device-id");
+ *
+ * // Parse an access token to get user ID and expiration
+ * const { payload: { user_id, exp } } = parseAccessToken("access-token-here");
+ * ```
+ *
+ * @module
+ */
 // References:
 // - https://github.com/StayRealHQ/Universal/blob/main/src/api/core/signature.ts
 
@@ -7,6 +26,16 @@ import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { decodeBase64, encodeBase64 } from "@std/encoding";
 
+/**
+ * Creates a BeReal signature required for API authentication
+ *
+ * This function generates the HMAC-based signature required by BeReal's API
+ * for request authentication. It combines the device ID, timezone, and timestamp.
+ *
+ * @param deviceId - The unique device identifier
+ * @param timestamp - Optional timestamp (defaults to current time)
+ * @returns The BeReal signature string
+ */
 export function createBeRealSignature(
   deviceId: string,
   timestamp = Math.floor(Date.now() / 1000)
@@ -24,22 +53,44 @@ export function createBeRealSignature(
   return encodeBase64(combined);
 }
 
+/**
+ * JWT header of a BeReal access token
+ */
 export type AccessTokenHeader = {
+  /** Algorithm used for the token */
   alg: string;
+  /** Type of token */
   typ: string;
 };
 
+/**
+ * Payload of a BeReal access token
+ */
 export type AccessTokenPayload = {
+  /** User identifier */
   uid: string;
+  /** User identifier (duplicate) */
   user_id: string;
+  /** Phone number country code */
   phone_number_country_code: string;
+  /** Token issuer */
   iss: string;
+  /** Token audience */
   aud: string;
+  /** Impersonation information (if any) */
   impersonated_by: null | unknown;
+  /** Token issued at timestamp */
   iat: number;
+  /** Token expiration timestamp */
   exp: number;
 };
 
+/**
+ * Parses a BeReal access token into its components
+ *
+ * @param token - The JWT token to parse
+ * @returns Object containing the token header and payload
+ */
 export function parseAccessToken(token: string): {
   header: AccessTokenHeader;
   payload: AccessTokenPayload;
@@ -56,6 +107,12 @@ export function parseAccessToken(token: string): {
   };
 }
 
+/**
+ * Checks if a BeReal access token has expired
+ *
+ * @param token - The JWT token to check
+ * @returns True if the token has expired, false otherwise
+ */
 export function isAccessTokenExpired(token: string): boolean {
   const { payload } = parseAccessToken(token);
   return payload.exp < Math.floor(Date.now() / 1000);

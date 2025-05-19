@@ -5,7 +5,8 @@
   "tasks": {
     "dev": "deno test --watch"
   },
-  "license": "MIT",
+  "description": "A TypeScript library for interacting with BeReal's internal APIs",
+  "license": "GPL-3.0",
   "imports": {
     "@biomejs/biome": "npm:@biomejs/biome@^1.9.4",
     "@std/assert": "jsr:@std/assert@1",

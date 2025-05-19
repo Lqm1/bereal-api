@@ -1,3 +1,27 @@
+/**
+ * BeReal Mobile API Module - Core client for interacting with BeReal's mobile API endpoints
+ * 
+ * This module provides the main BeReal client class for accessing BeReal's API features 
+ * including retrieving feeds, friend data, posting content, and other core functionality.
+ * It also includes error classes for handling BeReal-specific errors.
+ * 
+ * @example
+ * ```ts
+ * import { BeReal } from "jsr:@lami/bereal-api";
+ * 
+ * // Initialize client with access token
+ * const client = new BeReal("your-access-token");
+ * 
+ * // Get friends feed
+ * const feed = await client.getFeedsFriendsV1();
+ * console.log(feed.posts);
+ * 
+ * // Get me
+ * const me = await client.getPersonMe();
+ * ```
+ * 
+ * @module
+ */
 import ky, { type KyInstance } from "ky";
 import { BEREAL_DEFAULT_HEADERS, type ExtraHeaders } from "./constants.ts";
 import {
@@ -6,6 +30,9 @@ import {
   parseAccessToken,
 } from "./utils.ts";
 
+/**
+ * Base error class for all BeReal-related errors
+ */
 export class BeRealError extends Error {
   constructor(message: string) {
     super(message);
@@ -13,6 +40,9 @@ export class BeRealError extends Error {
   }
 }
 
+/**
+ * Error thrown when the access token has expired
+ */
 export class BeRealAccessTokenExpiredError extends BeRealError {
   constructor() {
     super("Access token expired");
@@ -20,13 +50,26 @@ export class BeRealAccessTokenExpiredError extends BeRealError {
   }
 }
 
+/**
+ * Main BeReal client class for interacting with BeReal's API
+ * 
+ * This class provides methods for accessing BeReal features such as feeds,
+ * friends, posts, comments, and more. It requires a valid access token.
+ */
 export class BeReal {
   private client: KyInstance;
   private accessTokenPayload: AccessTokenPayload;
   private _accessToken: string;
   private _userId: string;
   private readonly deviceId: string;
-
+  /**
+   * Creates a new BeReal client instance
+   * 
+   * @param accessToken - A valid BeReal access token
+   * @param deviceId - A unique device identifier 
+   * @param extraHeaders - Optional additional headers for API requests
+   * @throws {BeRealAccessTokenExpiredError} If the access token has expired
+   */
   constructor(
     accessToken: string,
     deviceId: string,
