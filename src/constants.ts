@@ -1,18 +1,18 @@
 /**
  * BeReal Constants Module - Contains constant values used by the BeReal API
- * 
+ *
  * This module exports various constants needed for interacting with BeReal's API,
  * including API keys, client IDs, and configuration values.
  * It also provides header creation functions for API requests.
- * 
+ *
  * @example
  * ```ts
  * import { BEREAL_DEFAULT_HEADERS } from "jsr:@lami/bereal-api";
- * 
+ *
  * // Create default headers with a device ID
  * const headers = BEREAL_DEFAULT_HEADERS("your-device-id-here");
  * ```
- * 
+ *
  * @module
  */
 // References:
@@ -31,8 +31,8 @@ export const BEREAL_APP_VERSION = "4.22.1";
 export const BEREAL_APP_VERSION_CODE = "20404";
 
 /** User's current timezone */
-export const BEREAL_TIMEZONE = new Intl.DateTimeFormat().resolvedOptions()
-  .timeZone;
+export const BEREAL_TIMEZONE: string =
+  new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 /** Arkose Labs public key used by BeReal */
 export const BEREAL_ARKOSE_LABS_PUBLIC_KEY =
@@ -74,7 +74,7 @@ export type ExtraHeaders = {
 
 /**
  * Creates default headers required for BeReal API requests
- * 
+ *
  * @param deviceId - The device identifier to use in headers
  * @param extraHeaders - Optional additional headers to include
  * @returns Object containing all required headers for BeReal API requests

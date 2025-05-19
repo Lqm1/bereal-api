@@ -1,25 +1,25 @@
 /**
  * BeReal Mobile API Module - Core client for interacting with BeReal's mobile API endpoints
- * 
- * This module provides the main BeReal client class for accessing BeReal's API features 
+ *
+ * This module provides the main BeReal client class for accessing BeReal's API features
  * including retrieving feeds, friend data, posting content, and other core functionality.
  * It also includes error classes for handling BeReal-specific errors.
- * 
+ *
  * @example
  * ```ts
  * import { BeReal } from "jsr:@lami/bereal-api";
- * 
+ *
  * // Initialize client with access token
  * const client = new BeReal("your-access-token");
- * 
+ *
  * // Get friends feed
  * const feed = await client.getFeedsFriendsV1();
  * console.log(feed.posts);
- * 
+ *
  * // Get me
  * const me = await client.getPersonMe();
  * ```
- * 
+ *
  * @module
  */
 import ky, { type KyInstance } from "ky";
@@ -52,7 +52,7 @@ export class BeRealAccessTokenExpiredError extends BeRealError {
 
 /**
  * Main BeReal client class for interacting with BeReal's API
- * 
+ *
  * This class provides methods for accessing BeReal features such as feeds,
  * friends, posts, comments, and more. It requires a valid access token.
  */
@@ -64,9 +64,9 @@ export class BeReal {
   private readonly deviceId: string;
   /**
    * Creates a new BeReal client instance
-   * 
+   *
    * @param accessToken - A valid BeReal access token
-   * @param deviceId - A unique device identifier 
+   * @param deviceId - A unique device identifier
    * @param extraHeaders - Optional additional headers for API requests
    * @throws {BeRealAccessTokenExpiredError} If the access token has expired
    */
@@ -118,28 +118,35 @@ export class BeReal {
       },
     });
   }
-
-  get accessToken() {
+  get accessToken(): string {
     return this._accessToken;
   }
 
-  get userId() {
+  get userId(): string {
     return this._userId;
   }
 
-  get accessTokenPhoneNumberCountryCode() {
+  get accessTokenPhoneNumberCountryCode(): string {
     return this.accessTokenPayload.phone_number_country_code;
   }
 
-  get accessTokenExpiresAt() {
+  get accessTokenExpiresAt(): Date {
     return new Date(this.accessTokenPayload.exp * 1000);
   }
 
-  isAccessTokenExpired() {
+  isAccessTokenExpired(): boolean {
     return this.accessTokenExpiresAt < new Date();
   }
 
-  async getTerms() {
+  async getTerms(): Promise<{
+    data: Array<{
+      code: string;
+      status: string;
+      signedAt?: string;
+      termUrl: string;
+      version: string;
+    }>;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -156,7 +163,51 @@ export class BeReal {
     }>();
   }
 
-  async getPersonMe() {
+  async getPersonMe(): Promise<{
+    id: string;
+    username: string;
+    birthdate: string;
+    fullname: string;
+    profilePicture?: {
+      url: string;
+      width: number;
+      height: number;
+    };
+    realmojis: Array<{
+      emoji: string;
+      media: {
+        url: string;
+        width: number;
+        height: number;
+      };
+    }>;
+    devices: Array<{
+      clientVersion: string;
+      device: string;
+      deviceId: string;
+      platform: string;
+      language: string;
+      timezone: string;
+    }>;
+    canDeletePost: boolean;
+    canPost: boolean;
+    canUpdateRegion: boolean;
+    phoneNumber: string;
+    countryCode: string;
+    region: string;
+    createdAt: string;
+    isRealPeople: boolean;
+    userFreshness: string;
+    streakLength: number;
+    type: string;
+    links: Array<unknown>;
+    customRealmoji: string;
+    gender: string;
+    isPrivate: boolean;
+    lastActiveAt: string;
+    previousLastActiveAt: string;
+    lastPostAt: string;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -209,7 +260,65 @@ export class BeReal {
     }>();
   }
 
-  async getSettings() {
+  async getSettings(): Promise<{
+    mandatoryVersions: {
+      ios: string;
+      android: string;
+    };
+    recommendedVersions: {
+      ios: string;
+      android: string;
+    };
+    storage: {
+      bucket: string;
+    };
+    polling: {
+      feedsFriends: number;
+      jitterPercent: number;
+      moment: number;
+    };
+    officialAccounts: {
+      maxFollows: number;
+      maxNotifications: number;
+    };
+    bts: {
+      maxLength: number;
+    };
+    cdn: Record<
+      string,
+      Array<{
+        domain: string;
+        weight: number;
+      }>
+    >;
+    analytics: {
+      batch: {
+        maxLength: number;
+        flushAfterMs: number;
+      };
+      metrics: {
+        postSustainLookTimeInMs: number;
+      };
+      amplitudeSettings: {
+        defaultAllowDeny: string;
+        allowedEvents: Record<string, unknown>;
+        deniedEvents: Record<string, Array<string>>;
+      };
+      vectorSettings: {
+        defaultAllowDeny: string;
+        allowedEvents: Record<string, Array<string>>;
+        deniedEvents: Record<string, unknown>;
+      };
+    };
+    featureFlags: Record<string, boolean>;
+    featureFlagsSettings: Record<string, unknown>;
+    fofInFeed: {
+      pollingRateMs: number;
+      delayMs: number;
+      size: number;
+      belowFriendsCount: number;
+    };
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -324,7 +433,87 @@ export class BeReal {
     }>();
   }
 
-  async getFeedsFriendsV1() {
+  async getFeedsFriendsV1(): Promise<{
+    userPosts: null | unknown;
+    friendsPosts: Array<{
+      user: {
+        id: string;
+        username: string;
+        profilePicture: {
+          url: string;
+          width: number;
+          height: number;
+          mediaType: string;
+        };
+        fullname: string;
+        type: string;
+      };
+      momentId: string;
+      region: string;
+      posts: Array<{
+        id: string;
+        userId: string;
+        momentId: string;
+        primary: {
+          url: string;
+          width: number;
+          height: number;
+          mediaType: string;
+        };
+        secondary: {
+          url: string;
+          width: number;
+          height: number;
+          mediaType: string;
+        };
+        realMojis: Array<{
+          id: string;
+          user: {
+            id: string;
+            username: string;
+            profilePicture?: {
+              url: string;
+              width: number;
+              height: number;
+              mediaType: string;
+            };
+            type: string;
+          };
+          media: {
+            url: string;
+            width: number;
+            height: number;
+            mediaType: string;
+          };
+          emoji: string;
+          type: string;
+          isInstant: boolean;
+          postedAt: string;
+        }>;
+        comments: Array<unknown>;
+        tags: Array<unknown>;
+        caption: string;
+        retakeCounter: number;
+        lateInSeconds: number;
+        isLate: boolean;
+        isMain: boolean;
+        isFirst: boolean;
+        isResurrected: boolean;
+        visibility: Array<string>;
+        origin: string;
+        postedAt: string;
+        takenAt: string;
+        creationDate: string;
+        createdAt: string;
+        updatedAt: string;
+        postType: string;
+      }>;
+      contentMappingEnabled: boolean;
+    }>;
+    remainingPosts: number;
+    maxPostsPerMoment: number;
+    eventProtoBytes: Array<unknown>;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -413,7 +602,22 @@ export class BeReal {
     }>();
   }
 
-  async getRecommendationsContacts() {
+  async getRecommendationsContacts(): Promise<{
+    recommendations: Array<{
+      userId: string;
+      username: string;
+      fullname: string;
+      hashedPhoneNumber: string;
+      profilePicture: {
+        height: number;
+        width: number;
+        url: string;
+      };
+      explanation: Array<string>;
+      mutualFriends: Array<unknown>;
+    }>;
+    totalRecommendations: number;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -440,7 +644,32 @@ export class BeReal {
   async getRecommendationsFriendsAndReverse(
     hashedPhoneNumber: string,
     limit = 50
-  ) {
+  ): Promise<{
+    recommendations: Array<{
+      username: string;
+      fullname?: string;
+      hashedPhoneNumber: string;
+      profilePicture?: {
+        url: string;
+        width: number;
+        height: number;
+      };
+      userId: string;
+      explanation: Array<string>;
+      mutualsCount: number;
+      mutualFriends: Array<{
+        username: string;
+        fullname: string;
+        profilePicture: {
+          url: string;
+          width: number;
+          height: number;
+        };
+      }>;
+      streakLength: number;
+    }>;
+    totalRecommendations: number;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }
@@ -482,7 +711,19 @@ export class BeReal {
     }>();
   }
 
-  async getContentPostsMultiFormatUploadUrl(mimeTypes: Array<string>) {
+  async getContentPostsMultiFormatUploadUrl(mimeTypes: Array<string>): Promise<{
+    data: Array<{
+      url: string;
+      expireAt: string;
+      bucket: string;
+      path: string;
+      headers: {
+        "Cache-Control": string;
+        "Content-Type": string;
+        "x-goog-content-length-range": string;
+      };
+    }>;
+  }> {
     if (this.isAccessTokenExpired()) {
       throw new BeRealAccessTokenExpiredError();
     }

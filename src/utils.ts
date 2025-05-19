@@ -20,7 +20,7 @@
 // References:
 // - https://github.com/StayRealHQ/Universal/blob/main/src/api/core/signature.ts
 
-/// <reference types="npm:@types/node" />
+/// <reference types="npm:@types/node@22.12.0" />
 import { BEREAL_HMAC_KEY, BEREAL_TIMEZONE } from "./constants.ts";
 import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
@@ -38,7 +38,7 @@ import { decodeBase64, encodeBase64 } from "@std/encoding";
  */
 export function createBeRealSignature(
   deviceId: string,
-  timestamp = Math.floor(Date.now() / 1000)
+  timestamp: number = Math.floor(Date.now() / 1000)
 ): string {
   const payload = `${deviceId}${BEREAL_TIMEZONE}${timestamp}`;
 
