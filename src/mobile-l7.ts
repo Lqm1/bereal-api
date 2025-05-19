@@ -288,7 +288,7 @@ export class BeReal {
 
     const response = await this.client.get("feeds/friends-v1");
     return response.json<{
-      userPosts: unknown;
+      userPosts: null | unknown;
       friendsPosts: Array<{
         user: {
           id: string;
