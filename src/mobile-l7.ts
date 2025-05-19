@@ -1,12 +1,30 @@
 import ky, { type KyInstance } from "ky";
 import { BEREAL_DEFAULT_HEADERS, type ExtraHeaders } from "./constants.ts";
-import { createBeRealSignature } from "./utils.ts";
-import { decodeBase64 } from "@std/encoding";
+import {
+  createBeRealSignature,
+  type AccessTokenPayload,
+  parseAccessToken,
+} from "./utils.ts";
+
+export class BeRealError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BeRealError";
+  }
+}
+
+export class BeRealAccessTokenExpiredError extends BeRealError {
+  constructor() {
+    super("Access token expired");
+    this.name = "BeRealAccessTokenExpiredError";
+  }
+}
 
 export class BeReal {
-  private readonly client: KyInstance;
-  private readonly accessToken: string;
-  private readonly userId: string;
+  private client: KyInstance;
+  private accessTokenPayload: AccessTokenPayload;
+  private _accessToken: string;
+  private _userId: string;
   private readonly deviceId: string;
 
   constructor(
@@ -14,16 +32,19 @@ export class BeReal {
     deviceId: string,
     extraHeaders?: ExtraHeaders
   ) {
-    this.accessToken = accessToken;
-    this.userId = JSON.parse(
-      new TextDecoder().decode(decodeBase64(this.accessToken.split(".")[1]))
-    ).user_id;
+    const { payload: accessTokenPayload } = parseAccessToken(accessToken);
+    this.accessTokenPayload = accessTokenPayload;
+    if (this.accessTokenPayload.exp * 1000 < Date.now()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+    this._accessToken = accessToken;
+    this._userId = this.accessTokenPayload.user_id;
     this.deviceId = deviceId;
     this.client = ky.extend({
       prefixUrl: "https://mobile-l7.bereal.com/api",
       headers: BEREAL_DEFAULT_HEADERS(deviceId, {
-        authorization: `Bearer ${this.accessToken}`,
-        "bereal-user-id": this.userId,
+        authorization: `Bearer ${accessToken}`,
+        "bereal-user-id": this._userId,
         ...extraHeaders,
       }),
       hooks: {
@@ -39,7 +60,47 @@ export class BeReal {
     });
   }
 
+  set accessToken(token: string) {
+    const { payload: accessTokenPayload } = parseAccessToken(token);
+    this.accessTokenPayload = accessTokenPayload;
+    if (this.accessTokenPayload.exp * 1000 < Date.now()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+    this._accessToken = token;
+    this._userId = this.accessTokenPayload.user_id;
+    this.client = this.client.extend({
+      headers: {
+        authorization: `Bearer ${token}`,
+        "bereal-user-id": this._userId,
+      },
+    });
+  }
+
+  get accessToken() {
+    return this._accessToken;
+  }
+
+  get userId() {
+    return this._userId;
+  }
+
+  get accessTokenPhoneNumberCountryCode() {
+    return this.accessTokenPayload.phone_number_country_code;
+  }
+
+  get accessTokenExpiresAt() {
+    return new Date(this.accessTokenPayload.exp * 1000);
+  }
+
+  isAccessTokenExpired() {
+    return this.accessTokenExpiresAt < new Date();
+  }
+
   async getTerms() {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get("terms");
     return response.json<{
       data: Array<{
@@ -53,6 +114,10 @@ export class BeReal {
   }
 
   async getPersonMe() {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get("person/me");
     return response.json<{
       id: string;
@@ -102,6 +167,10 @@ export class BeReal {
   }
 
   async getSettings() {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get("settings");
     return response.json<{
       mandatoryVersions: {
@@ -213,6 +282,10 @@ export class BeReal {
   }
 
   async getFeedsFriendsV1() {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get("feeds/friends-v1");
     return response.json<{
       userPosts: unknown;
@@ -298,6 +371,10 @@ export class BeReal {
   }
 
   async getRecommendationsContacts() {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get("recommendations/contacts");
     return response.json<{
       recommendations: Array<{
@@ -321,6 +398,10 @@ export class BeReal {
     hashedPhoneNumber: string,
     limit = 50
   ) {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get(
       "recommendations/friends-and-reverse",
       {
@@ -359,6 +440,10 @@ export class BeReal {
   }
 
   async getContentPostsMultiFormatUploadUrl(mimeTypes: Array<string>) {
+    if (this.isAccessTokenExpired()) {
+      throw new BeRealAccessTokenExpiredError();
+    }
+
     const response = await this.client.get(
       "content/posts/multi-format-upload-url",
       {
